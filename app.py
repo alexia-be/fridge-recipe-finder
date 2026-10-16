@@ -1,5 +1,6 @@
 # app.py - the entry point of our web app
 from flask import Flask, render_template, request, jsonify
+from recipes import find_recipes
 
 app = Flask(__name__)
 
@@ -8,6 +9,9 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 # Only these image types are allowed
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+# Temporary hardcoded ingredients (Milestone 4 will detect them from a photo)
+SAMPLE_INGREDIENTS = ["eggs", "tomatoes", "onion", "cheese"]
 
 
 def error_response(code, message, status):
@@ -39,6 +43,14 @@ def upload():
     size = len(photo.read())
     return jsonify({"message": "Photo received", "filename": photo.filename, "bytes": size})
 
+
+@app.route("/recipes")
+def recipes():
+    # Look up recipes for the sample ingredients and return them as JSON
+    return jsonify({
+        "ingredients": SAMPLE_INGREDIENTS,
+        "recipes": find_recipes(SAMPLE_INGREDIENTS),
+    })
 
 @app.errorhandler(413)
 def too_large(e):

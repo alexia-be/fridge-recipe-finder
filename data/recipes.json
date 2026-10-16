@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Tomato Omelette",
+    "ingredients": ["egg", "tomato", "onion", "cheese"],
+    "instructions": "Beat the eggs, cook the chopped tomato and onion, pour the eggs over, add cheese and fold."
+  },
+  {
+    "name": "Scrambled Eggs on Toast",
+    "ingredients": ["egg", "bread", "butter"],
+    "instructions": "Scramble the eggs in butter and serve on toasted bread."
+  },
+  {
+    "name": "Cheese Quesadilla",
+    "ingredients": ["tortilla", "cheese", "onion", "bell pepper"],
+    "instructions": "Fill a tortilla with cheese, onion and pepper, then fry until crisp on both sides."
+  },
+  {
+    "name": "Pasta with Tomato Sauce",
+    "ingredients": ["pasta", "tomato", "garlic", "onion"],
+    "instructions": "Simmer chopped tomato, garlic and onion into a sauce and toss with cooked pasta."
+  },
+  {
+    "name": "Chicken Stir-Fry",
+    "ingredients": ["chicken", "bell pepper", "onion", "garlic", "soy sauce", "rice"],
+    "instructions": "Stir-fry the chicken and vegetables, add soy sauce and serve over rice."
+  },
+  {
+    "name": "Veggie Fried Rice",
+    "ingredients": ["rice", "egg", "carrot", "onion", "soy sauce"],
+    "instructions": "Fry the carrot and onion, add rice and egg, and season with soy sauce."
+  },
+  {
+    "name": "Grilled Cheese Sandwich",
+    "ingredients": ["bread", "cheese", "butter"],
+    "instructions": "Butter the bread, add cheese between the slices and fry until golden."
+  },
+  {
+    "name": "Potato and Egg Hash",
+    "ingredients": ["potato", "egg", "onion", "bell pepper"],
+    "instructions": "Fry diced potato, onion and pepper until soft, then crack the eggs on top."
+  },
+  {
+    "name": "Creamy Mushroom Pasta",
+    "ingredients": ["pasta", "mushroom", "garlic", "cream", "cheese"],
+    "instructions": "Cook mushrooms and garlic, add cream and cheese, then toss with pasta."
+  },
+  {
+    "name": "Chicken Salad",
+    "ingredients": ["chicken", "lettuce", "tomato", "cucumber", "mayonnaise"],
+    "instructions": "Mix chopped cooked chicken with vegetables and mayonnaise."
+  }
+]
