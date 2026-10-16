@@ -1,6 +1,7 @@
 # app.py - the entry point of our web app
 from flask import Flask, render_template, request, jsonify
 from recipes import find_recipes
+from vision import detect_ingredients, VisionError
 
 app = Flask(__name__)
 
@@ -38,11 +39,10 @@ def upload():
             "BAD_FILE_TYPE", "Please upload a JPG, PNG or WebP image.", 415
         )
 
-    # For now we only report the file name and size.
-    # We do NOT save the photo anywhere (privacy).
-    size = len(photo.read())
-    return jsonify({"message": "Photo received", "filename": photo.filename, "bytes": size})
 
+    # Read the photo into memory only. It is never saved to disk.
+    ingredients = detect_ingredients(photo.read())
+    return jsonify({"ingredients": ingredients})
 
 @app.route("/recipes")
 def recipes():
@@ -51,6 +51,11 @@ def recipes():
         "ingredients": SAMPLE_INGREDIENTS,
         "recipes": find_recipes(SAMPLE_INGREDIENTS),
     })
+
+@app.errorhandler(VisionError)
+def handle_vision_error(e):
+    # Any VisionError raised in vision.py ends up here, in our standard shape
+    return error_response(e.code, e.message, e.status)
 
 @app.errorhandler(413)
 def too_large(e):

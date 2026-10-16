@@ -6,7 +6,8 @@ const status = document.getElementById("status");
 // Run this when the button is clicked
 button.addEventListener("click", async () => {
   status.className = "";
-  status.textContent = "Uploading...";
+  status.textContent = "Looking at your photo... the first time can take a minute.";
+  button.disabled = true;  // stop double-clicks while the model works
 
   // Put the chosen file in a "form" package for sending
   const formData = new FormData();
@@ -22,12 +23,14 @@ button.addEventListener("click", async () => {
       status.className = "error";
       status.textContent = data.error.message;
     } else {
-      status.textContent = "Got it: " + data.filename + " (" + data.bytes + " bytes)";
+      status.textContent = "I can see: " + data.ingredients.join(", ");
     }
   } catch (err) {
     // The server could not be reached at all
     status.className = "error";
     status.textContent = "Could not reach the app. Is the server running?";
+  } finally {
+    button.disabled = false;  // always re-enable the button
   }
 });
 
