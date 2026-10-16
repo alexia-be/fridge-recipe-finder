@@ -1,0 +1,12 @@
+# Virtual environment and Python cache
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets (we will commit .env.example, never .env)
+.env
+
+# Logs and test cache
+logs/
+*.log
+.pytest_cache/
