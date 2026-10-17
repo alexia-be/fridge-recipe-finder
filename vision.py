@@ -6,6 +6,7 @@ import requests
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 OLLAMA_URL = "http://localhost:11434/api/chat"  # Ollama's local address
+OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"  # lists the downloaded models
 MODEL = "qwen3-vl:8b-instruct"
 TIMEOUT_SECONDS = 120  # the first request is slow while the model loads
 MAX_SIDE = 1024        # shrink big photos: faster, and fits the model's memory
@@ -125,3 +126,14 @@ def detect_ingredients(image_bytes):
     image_b64 = base64.b64encode(jpeg).decode("ascii")  # text form of the image
     answer = ask_model(image_b64)
     return parse_ingredients(answer)
+
+def check_ollama():
+    """Ask Ollama which models it has. Returns (ollama_status, model_status)."""
+    try:
+        response = requests.get(OLLAMA_TAGS_URL, timeout=2)
+        response.raise_for_status()
+        names = [m.get("name", "") for m in response.json().get("models", [])]
+    except (requests.exceptions.RequestException, ValueError):
+        return "unreachable", "unknown"  # Ollama isn't running or didn't answer
+
+    return "ok", "ready" if MODEL in names else "missing"
