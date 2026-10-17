@@ -1,5 +1,6 @@
 # app.py - the entry point of our web app
 from flask import Flask, render_template, request, jsonify
+
 from recipes import find_recipes
 from vision import detect_ingredients, VisionError
 
@@ -11,8 +12,9 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 # Only these image types are allowed
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
-# Temporary hardcoded ingredients (Milestone 4 will detect them from a photo)
-SAMPLE_INGREDIENTS = ["eggs", "tomatoes", "onion", "cheese"]
+# Limits for the ingredient list sent to /recipes
+MAX_INGREDIENTS = 40
+MAX_NAME_LENGTH = 50
 
 
 def error_response(code, message, status):
@@ -39,23 +41,42 @@ def upload():
             "BAD_FILE_TYPE", "Please upload a JPG, PNG or WebP image.", 415
         )
 
-
     # Read the photo into memory only. It is never saved to disk.
     ingredients = detect_ingredients(photo.read())
     return jsonify({"ingredients": ingredients})
 
-@app.route("/recipes")
+
+@app.route("/recipes", methods=["POST"])
 def recipes():
-    # Look up recipes for the sample ingredients and return them as JSON
-    return jsonify({
-        "ingredients": SAMPLE_INGREDIENTS,
-        "recipes": find_recipes(SAMPLE_INGREDIENTS),
-    })
+    # The page sends the (possibly edited) ingredient list as JSON
+    data = request.get_json(silent=True)  # silent=True: None instead of crashing
+    ingredients = data.get("ingredients") if isinstance(data, dict) else None
+
+    # It must be a list of text items
+    if not isinstance(ingredients, list) or not all(isinstance(i, str) for i in ingredients):
+        return error_response(
+            "INVALID_REQUEST",
+            "Something went wrong with the ingredient list. Please try again.",
+            400,
+        )
+
+    # Tidy it up: trim spaces, drop blanks, cap the length and the count
+    ingredients = [i.strip()[:MAX_NAME_LENGTH] for i in ingredients if i.strip()]
+    ingredients = ingredients[:MAX_INGREDIENTS]
+
+    if not ingredients:
+        return error_response(
+            "EMPTY_INGREDIENT_LIST", "Please add at least one ingredient.", 400
+        )
+
+    return jsonify({"ingredients": ingredients, "recipes": find_recipes(ingredients)})
+
 
 @app.errorhandler(VisionError)
 def handle_vision_error(e):
     # Any VisionError raised in vision.py ends up here, in our standard shape
     return error_response(e.code, e.message, e.status)
+
 
 @app.errorhandler(413)
 def too_large(e):

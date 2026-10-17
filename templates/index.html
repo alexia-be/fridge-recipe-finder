@@ -11,15 +11,24 @@
     <h1>Fridge Recipe Finder</h1>
     <p>Snap your fridge, get dinner ideas.</p>
 
-    <!-- The file picker and button -->
+    <!-- Step 1: upload a photo -->
     <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
     <button id="upload-btn">Upload photo</button>
 
-    <!-- Messages appear here -->
-    <p id="status"></p>
-    <hr>
-    <!-- Milestone 3: temporary button using hardcoded ingredients -->
-    <button id="recipe-btn">Show sample recipes</button>
+    <!-- Loading spinner and messages -->
+    <p><span id="spinner" class="spinner" hidden></span> <span id="status"></span></p>
+
+    <!-- Step 2: editable ingredient list (hidden until a photo is analysed) -->
+    <section id="ingredient-section" hidden>
+      <h2>Ingredients found</h2>
+      <ul id="ingredient-list"></ul>
+      <input type="text" id="new-ingredient" placeholder="Add an ingredient" maxlength="50">
+      <button id="add-btn">Add</button>
+      <br>
+      <button id="find-btn">Find recipes</button>
+    </section>
+
+    <!-- Step 3: recipe results -->
     <div id="recipes"></div>
   </main>
 
