@@ -1,4 +1,3 @@
-
 # Fridge Recipe Finder
 
 Snap your fridge, get dinner ideas.
@@ -9,12 +8,12 @@ A small web app that looks at a photo of your fridge, works out which ingredient
 
 ## How it works
 
-1. You upload a fridge photo on the web page.
+1. You take a photo with your camera or upload a fridge photo on the web page. Camera video stays in your browser; only the single captured photo is sent to your local server.
 2. The Flask backend checks the file (type, size, valid image), shrinks it, and sends it to a vision model running locally in [Ollama](https://ollama.com). The model answers with a list of ingredients as JSON.
 3. The page shows the ingredients as an editable list, so you can remove wrong guesses and add missing items.
 4. The backend matches your list against a local recipe file and returns recipes ranked by how many of your ingredients they use, showing which ingredients are missing.
 
-**Privacy:** the photo is held in memory only while it is processed. It is not written to disk, and the log never contains image data or file names.
+**Privacy:** the photo is held in memory only while it is processed. It is not written to disk, and the log never contains image data or file names. If you use the camera, the video stays in your browser, and the camera switches off right after the photo is taken.
 
 ## Tech stack
 
@@ -22,6 +21,7 @@ A small web app that looks at a photo of your fridge, works out which ingredient
 |------|--------------|
 | Backend | Python 3.10+, Flask |
 | Frontend | Plain HTML, CSS and JavaScript (no framework) |
+| Camera | The browser's built-in camera support (no extra libraries) |
 | AI | Ollama with `qwen3-vl:8b-instruct` (Apache 2.0 license) |
 | Image handling | Pillow |
 | Recipes | Local file, `data/recipes.json` (no API key, works offline) |
@@ -69,7 +69,7 @@ Open <http://127.0.0.1:5000> in your browser.
 
 ## Using the app
 
-1. Choose a fridge photo (JPG, PNG or WebP, up to 5 MB) and click **Upload photo**. The first photo after starting takes longest, because the model has to load.
+1. Click **Use camera**, allow camera access when your browser asks, point the camera at your fridge and click **Take photo**. Or choose a fridge photo (JPG, PNG or WebP, up to 5 MB) and click **Upload photo**. The first photo after starting takes longest, because the model has to load.
 2. Check the ingredient list. Click **×** to remove a wrong item, or type a new one and press Enter.
 3. Click **Find recipes** to see matching recipes, best match first.
 
@@ -85,6 +85,8 @@ Open <http://127.0.0.1:5000> in your browser.
 The examples use `curl.exe` (the `.exe` matters in PowerShell, where plain `curl` is something else).
 
 ### POST /upload
+
+The web page's camera sends its captured photo to this same address, so photos from the camera and from a file are handled identically.
 
 ```powershell
 curl.exe -F "photo=@fridge.jpg" http://127.0.0.1:5000/upload
@@ -202,7 +204,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-The tests use a fake Ollama, so they run in seconds and don't need the model. They cover the error cases above, recipe ranking, and the health check.
+The tests use a fake Ollama, so they run in seconds and don't need the model. They cover the error cases above, recipe ranking, and the health check. The camera feature runs in the browser, so it was tested by hand and is not covered by pytest.
 
 ## Project structure
 
@@ -221,11 +223,11 @@ fridge-recipe-finder/
 │   └── index.html         # the web page
 ├── static/
 │   ├── style.css          # how it looks
-│   └── app.js             # what it does in the browser
+│   └── app.js             # what it does in the browser, including the camera
 ├── tests/
 │   └── test_app.py        # automated tests
 ├── docs/
-│   └── demo.gif           # demo recording
+│   └── demo-Milestone-6.gif           # demo recording
 ├── LICENSE
 └── README.md
 ```
@@ -242,6 +244,10 @@ fridge-recipe-finder/
 | "The AI took too long to answer" | First request loads the model, or no GPU | Try again. Run `ollama ps` and check the **PROCESSOR** column. Try a smaller photo |
 | "The AI gave an answer we couldn't read" | The model's answer was not valid JSON | Try again. Check `vision.py` uses `qwen3-vl:8b-instruct`, not the `qwen3-vl:8b` "thinking" edition, which can run out of room before it writes its answer |
 | "We couldn't spot any food" | Unclear photo | Use a closer, brighter photo |
+| "Camera access was blocked" | Camera permission was denied | Click the lock icon in the address bar, set **Camera** to **Allow**, and reload. Or upload a file instead |
+| "No camera was found" | No webcam, or the browser can't see it | Upload a file instead, or plug in a webcam and reload |
+| "The camera is being used by another program" | Another app, such as a video call, has the camera | Close that program and try again |
+| "The camera isn't available here" | Browsers only allow the camera on `localhost` / `127.0.0.1` | Open the app at `http://127.0.0.1:5000`, not at your computer's network address |
 | Port 5000 already in use | Another program uses it | Close it, or change the port in `app.py` (`app.run(debug=True, port=5001)`) |
 | The page behaves like an old version | An old server is still running, or the browser cached old files | Stop the old server with Ctrl+C, restart it, then press Ctrl+F5 in the browser |
 | Anything else | | Check `http://127.0.0.1:5000/health`, then read the end of `logs\app.log` |
@@ -252,6 +258,7 @@ fridge-recipe-finder/
 - **Image size:** photos are shrunk to 1024 pixels on the longest side before analysis, so small or hidden items may be missed.
 - **Speed:** it depends on your hardware. The first photo after starting is slowest while the model loads, and running without a GPU is much slower.
 - **Small recipe set:** `data/recipes.json` holds 10 recipes. Matching uses exact ingredient names with simple plural handling, so "pepper" does not match "bell pepper". Pantry staples such as salt and oil are not included.
+- **Camera:** it needs a webcam and your permission, and browsers only allow it on `localhost` / `127.0.0.1`, so opening the app from another device on your network won't give camera access. A laptop webcam is hard to point at a fridge, so file upload is kept as a fallback.
 - **Setup size:** the model needs about 6 GB of disk space. Internet is only needed for setup, because the recipes are local.
 - **Local demo only:** it runs on Flask's development server with no login, so it is not meant to be hosted.
 - **English only.**

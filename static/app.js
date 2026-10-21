@@ -1,6 +1,12 @@
 // ----- Find the page elements we need -----
 const fileInput = document.getElementById("photo");
 const uploadBtn = document.getElementById("upload-btn");
+const cameraBtn = document.getElementById("camera-btn");
+const cameraSection = document.getElementById("camera-section");
+const video = document.getElementById("video");
+const snapBtn = document.getElementById("snap-btn");
+const cancelCameraBtn = document.getElementById("cancel-camera-btn");
+const canvas = document.getElementById("canvas");
 const statusEl = document.getElementById("status");
 const spinner = document.getElementById("spinner");
 
@@ -13,6 +19,8 @@ const recipesDiv = document.getElementById("recipes");
 
 // The current ingredient list lives in this variable
 let ingredients = [];
+// The camera stream, while the camera is on
+let cameraStream = null;
 
 // ----- Small helpers -----
 
@@ -26,6 +34,7 @@ function showMessage(text, isError = false) {
 function setLoading(isLoading, text = "") {
   spinner.hidden = !isLoading;
   uploadBtn.disabled = isLoading;
+  cameraBtn.disabled = isLoading;
   findBtn.disabled = isLoading;
   if (isLoading) showMessage(text);
 }
@@ -47,15 +56,10 @@ async function callServer(url, options) {
   return data;
 }
 
-// ----- Step 1: upload the photo -----
-uploadBtn.addEventListener("click", async () => {
-  if (!fileInput.files[0]) {
-    showMessage("Please choose a photo first.", true);
-    return;
-  }
-
+// ----- Analyse a photo (from a file or from the camera) -----
+async function analyzePhoto(photo, filename) {
   const formData = new FormData();
-  formData.append("photo", fileInput.files[0]);
+  formData.append("photo", photo, filename);
 
   setLoading(true, "Looking at your photo... the first time can take a minute.");
   try {
@@ -70,9 +74,93 @@ uploadBtn.addEventListener("click", async () => {
   } finally {
     setLoading(false);  // always runs, so the buttons never get stuck
   }
+}
+
+// ----- Option 2: upload a file -----
+uploadBtn.addEventListener("click", () => {
+  const file = fileInput.files[0];
+  if (!file) {
+    showMessage("Please choose a photo first.", true);
+    return;
+  }
+  stopCamera();  // in case the camera preview is open
+  analyzePhoto(file, file.name);
 });
 
-// ----- Step 2: the editable ingredient list -----
+// ----- Option 1: take a photo with the camera -----
+
+// Turn the camera on and show the live preview
+async function startCamera() {
+  // Some browsers (or non-local addresses) don't allow camera access at all
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showMessage("The camera isn't available here. Please upload a photo instead.", true);
+    return;
+  }
+  try {
+    // Ask permission and prefer the back camera if there is one
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false,
+    });
+    video.srcObject = cameraStream;
+    cameraSection.hidden = false;
+    cameraBtn.hidden = true;
+    showMessage("");
+  } catch (err) {
+    showMessage(cameraErrorMessage(err), true);
+  }
+}
+
+// Turn each camera error into a message a non-technical user can follow
+function cameraErrorMessage(err) {
+  if (err.name === "NotAllowedError") {
+    return "Camera access was blocked. Allow the camera in your browser, or upload a photo instead.";
+  }
+  if (err.name === "NotFoundError") {
+    return "No camera was found. Please upload a photo instead.";
+  }
+  if (err.name === "NotReadableError") {
+    return "The camera is being used by another program. Close it and try again.";
+  }
+  return "Could not start the camera. Please upload a photo instead.";
+}
+
+// Turn the camera off (this also switches off the camera light)
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+  }
+  video.srcObject = null;
+  cameraSection.hidden = true;
+  cameraBtn.hidden = false;
+}
+
+// Grab the current video frame, turn it into a JPEG and analyse it
+snapBtn.addEventListener("click", () => {
+  if (!video.videoWidth) {
+    showMessage("The camera isn't ready yet. Please wait a moment and try again.", true);
+    return;
+  }
+  // Draw the current frame onto the hidden canvas
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  stopCamera();  // the picture is taken, so switch the camera off
+
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      showMessage("Could not capture the photo. Please try again.", true);
+      return;
+    }
+    analyzePhoto(blob, "camera.jpg");
+  }, "image/jpeg", 0.9);
+});
+
+cameraBtn.addEventListener("click", startCamera);
+cancelCameraBtn.addEventListener("click", stopCamera);
+
+// ----- The editable ingredient list -----
 
 // Redraw the list from the `ingredients` variable
 function renderIngredients() {
@@ -110,7 +198,7 @@ newIngredient.addEventListener("keydown", (event) => {
   if (event.key === "Enter") addIngredient();  // Enter works too
 });
 
-// ----- Step 3: find recipes for the edited list -----
+// ----- Find recipes for the edited list -----
 findBtn.addEventListener("click", async () => {
   setLoading(true, "Finding recipes...");
   try {

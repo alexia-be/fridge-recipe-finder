@@ -74,3 +74,11 @@ button {
   margin: 0 0 0 0.3rem;
   padding: 0 0.5rem;
 }
+
+/* Camera preview */
+#video {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 8px;
+  background: #000;
+}

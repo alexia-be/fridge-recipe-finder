@@ -11,14 +11,25 @@
     <h1>Fridge Recipe Finder</h1>
     <p>Snap your fridge, get dinner ideas.</p>
 
-    <!-- Step 1: upload a photo -->
+    <!-- Option 1: take a photo with the camera -->
+    <button id="camera-btn">Use camera</button>
+    <section id="camera-section" hidden>
+      <video id="video" autoplay playsinline muted></video>
+      <br>
+      <button id="snap-btn">Take photo</button>
+      <button id="cancel-camera-btn">Cancel</button>
+    </section>
+    <canvas id="canvas" hidden></canvas>
+
+    <!-- Option 2: upload a file -->
+    <p>or choose a file:</p>
     <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
     <button id="upload-btn">Upload photo</button>
 
     <!-- Loading spinner and messages -->
     <p><span id="spinner" class="spinner" hidden></span> <span id="status"></span></p>
 
-    <!-- Step 2: editable ingredient list (hidden until a photo is analysed) -->
+    <!-- Editable ingredient list (hidden until a photo is analysed) -->
     <section id="ingredient-section" hidden>
       <h2>Ingredients found</h2>
       <ul id="ingredient-list"></ul>
@@ -28,7 +39,7 @@
       <button id="find-btn">Find recipes</button>
     </section>
 
-    <!-- Step 3: recipe results -->
+    <!-- Recipe results -->
     <div id="recipes"></div>
   </main>
 
