@@ -4,7 +4,24 @@ Snap your fridge, get dinner ideas.
 
 A small web app that looks at a photo of your fridge, works out which ingredients are in it, and suggests recipes ranked by how many of your ingredients each one uses. Everything runs on your own computer: the photo is analysed by a local AI model, is never sent over the internet, and is never saved to disk.
 
-![Demo of Fridge Recipe Finder](docs/demo-Milestone-6.gif)
+![Demo of Fridge Recipe Finder](docs/demo-milestone-7.gif)
+
+## 🌱 Part of my learning journey
+
+I'm a technical support specialist with a strong background in REST APIs. I build projects like this one to learn by doing, building and learning at the same time. I'm sharing it as I go, so you can see the real process: what I built, what broke, and what I'd improve.
+
+This app was built with Claude, an AI assistant, in small milestones (Flask basics, file upload, recipe matching, local vision model, error handling, logging, tests, camera capture). It works, but the code got ahead of my understanding of it. I paused the project to learn the fundamentals properly, so I can come back and explain every part myself.
+
+What the project involves, and what I'm studying so I can explain it:
+
+- Building a web app with **Python + Flask**: routes, file uploads, and consistent JSON errors
+- Running a local vision model with **Ollama** to detect ingredients from a photo
+- Adding **logging**, a `/health` endpoint, and **pytest** tests that use a fake Ollama
+- Choosing the right model: the "thinking" edition of `qwen3-vl:8b` ran out of room before it wrote its answer, and switching to `qwen3-vl:8b-instruct` fixed it
+
+## Status
+
+⏸️ **Paused** while I learn the Python and JavaScript fundamentals behind it through guided projects, so I can fully understand this code. The app works end to end, including camera capture. When I come back, I plan to understand the code in full first, then add AI-generated recipes (see [Next goals](#next-goals)).
 
 ## How it works
 
@@ -227,7 +244,7 @@ fridge-recipe-finder/
 ├── tests/
 │   └── test_app.py        # automated tests
 ├── docs/
-│   └── demo-Milestone-6.gif           # demo recording
+│   └── demo-milestone-7.gif           # demo recording
 ├── LICENSE
 └── README.md
 ```
@@ -262,6 +279,11 @@ fridge-recipe-finder/
 - **Setup size:** the model needs about 6 GB of disk space. Internet is only needed for setup, because the recipes are local.
 - **Local demo only:** it runs on Flask's development server with no login, so it is not meant to be hosted.
 - **English only.**
+
+## Next goals
+
+- **Understand the code in full.** I want to be able to explain every part of the app, from the Flask routes to the Ollama integration to the tests. I'm going back through the code file by file as part of my learning journey, and I plan to add a "How the code works" section once I can.
+- **Generate recipes with a local AI model.** Right now recipes come from a small local file (10 recipes). Using Ollama to generate them from the detected ingredients would remove that limit while keeping everything free and local.
 
 ## License
 
